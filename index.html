@@ -1,1 +1,680 @@
-How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AKB: How Auditory Knowledge in LLM Backbones Shapes Audio Language Models</title>
+<style>
+:root {
+  --primary: #2563eb;
+  --primary-light: #dbeafe;
+  --bg: #ffffff;
+  --bg-alt: #f8fafc;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --cyan-5: #ecfeff;
+  --cyan-10: #d9f7fa;
+  --cyan-14: #c6f0f5;
+  --cyan-18: #b3e9f0;
+  --cyan-22: #a0e2eb;
+  --cyan-26: #8ddbe6;
+  --cyan-30: #7ad4e1;
+  --cyan-34: #67cddc;
+  --cyan-38: #54c6d7;
+  --cyan-42: #41bfd2;
+  --cyan-46: #2eb8cd;
+  --cyan-50: #1bb1c8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  line-height: 1.6;
+  background: var(--bg);
+}
+
+.container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+/* Hero */
+.hero {
+  text-align: center;
+  padding: 60px 24px 40px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-bottom: 1px solid var(--border);
+}
+.hero h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  max-width: 800px;
+  margin: 0 auto 16px;
+}
+.authors {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  max-width: 800px;
+  margin: 0 auto 8px;
+  line-height: 1.8;
+}
+.authors a { color: var(--text); text-decoration: none; }
+.authors a:hover { color: var(--primary); }
+.affiliations {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.btn-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 2px solid var(--border);
+  background: white;
+  color: var(--text);
+}
+.btn:hover { border-color: var(--primary); color: var(--primary); }
+.btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+.btn-primary:hover { background: #1d4ed8; }
+.btn svg { width: 18px; height: 18px; }
+
+/* Sections */
+section { padding: 48px 0; }
+section:nth-child(even) { background: var(--bg-alt); }
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.section-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 700px;
+  margin: -12px auto 28px;
+}
+
+/* Abstract */
+.abstract-text {
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 1rem;
+  line-height: 1.8;
+  text-align: justify;
+}
+
+/* Figure */
+.figure-wrap {
+  text-align: center;
+  margin: 20px 0;
+}
+.figure-wrap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.figure-caption {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Key Findings Cards */
+.findings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.finding-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 20px;
+  border-top: 4px solid var(--primary);
+}
+.finding-card .icon { font-size: 1.5rem; margin-bottom: 8px; }
+.finding-card h3 { font-size: 0.95rem; margin-bottom: 8px; font-weight: 700; }
+.finding-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+
+/* Tabs */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 24px;
+}
+.tab-btn {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.tab-btn:hover { color: var(--primary); }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+th, td {
+  padding: 8px 12px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  background: #f1f5f9;
+  font-weight: 700;
+}
+td:first-child, th:first-child { text-align: left; }
+.row-separator td { border-top: 2px solid #94a3b8; }
+.group-label {
+  text-align: left !important;
+  font-style: italic;
+  color: var(--text-secondary);
+  font-weight: 600;
+  background: #f8fafc;
+}
+.gap-val { font-size: 0.7rem; color: var(--text-secondary); }
+
+/* Leaderboard highlight */
+.leaderboard td { font-size: 0.85rem; }
+.leaderboard th { font-size: 0.82rem; }
+.leaderboard td:first-child { font-weight: 600; }
+.na-cell { color: #cbd5e1; }
+
+/* Citation */
+.citation-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  position: relative;
+  white-space: pre-wrap;
+  max-width: 800px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+.copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.copy-btn:hover { background: #f1f5f9; }
+
+/* Figures side by side */
+.figures-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+.figures-row img { width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 32px 24px;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 1.4rem; }
+  .findings-grid { grid-template-columns: 1fr; }
+  .figures-row { grid-template-columns: 1fr; }
+  table { font-size: 0.75rem; }
+  th, td { padding: 6px 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<header class="hero">
+  <h1>How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation</h1>
+  <div class="authors">
+    <a href="#">Ke-Han Lu</a><sup>1</sup>,
+    <a href="#">Szu-Wei Fu</a><sup>2</sup>,
+    <a href="#">Chao-Han Huck Yang</a><sup>2</sup>,
+    <a href="#">Zhehuai Chen</a><sup>2</sup>,
+    <a href="#">Sung-Feng Huang</a><sup>2</sup>,
+    <a href="#">Chih-Kai Yang</a><sup>1</sup>,
+    <a href="#">Yi-Cheng Lin</a><sup>1</sup>,
+    <a href="#">Chi-Yuan Hsiao</a><sup>1</sup>,
+    <a href="#">Wenze Ren</a><sup>1</sup>,
+    <a href="#">En-Pei Hu</a><sup>1</sup>,
+    <a href="#">Yu-Han Huang</a><sup>1</sup>,
+    <a href="#">An-Yu Cheng</a><sup>1</sup>,
+    <a href="#">Cheng-Han Chiang</a><sup>1</sup>,
+    <a href="#">Yu Tsao</a><sup>3</sup>,
+    <a href="#">Yu-Chiang Frank Wang</a><sup>2</sup>,
+    <a href="#">Hung-yi Lee</a><sup>1</sup>
+  </div>
+  <div class="affiliations">
+    <sup>1</sup> National Taiwan University &nbsp;&nbsp;
+    <sup>2</sup> NVIDIA &nbsp;&nbsp;
+    <sup>3</sup> Academia Sinica
+  </div>
+  <div class="btn-row">
+    <a href="https://arxiv.org/abs/2603.19195" class="btn btn-primary" target="_blank">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Paper
+    </a>
+    <a href="https://github.com/kehanlu/AKB" class="btn" target="_blank">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+      Code
+    </a>
+  </div>
+</header>
+
+<!-- Abstract -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Abstract</h2>
+    <p class="abstract-text">
+      Large language models (LLMs) have been widely used as knowledge backbones of Large Audio Language Models (LALMs), yet how much auditory knowledge they encode through text-only pre-training and how this affects downstream performance remains unclear. We study this gap by comparing different LLMs under two text-only and one audio-grounded setting: (1) direct probing on <strong>AKB-2000</strong>, a curated benchmark testing the breadth and depth of auditory knowledge; (2) <strong>cascade evaluation</strong>, where LLMs reason over text descriptions from an audio captioner; and (3) <strong>audio-grounded evaluation</strong>, where each LLM is fine-tuned into a Large Audio Language Model (LALM) with an audio encoder. Our findings reveal that auditory knowledge varies substantially across families, and text-only results are strongly correlated with audio performance. Our work provides empirical grounding for a comprehensive understanding of LLMs in audio research.
+    </p>
+  </div>
+</section>
+
+<!-- Overview Figure -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Overview</h2>
+    <p class="section-subtitle">Three complementary evaluations to investigate auditory knowledge in LLMs</p>
+    <div class="figure-wrap">
+      <img src="static/figure1.png" alt="Overview of three evaluation settings: AKB-2000 construction, Cascade evaluation, and Audio-grounded evaluation" loading="lazy">
+      <p class="figure-caption"><strong>Figure 1.</strong> Overview of the three evaluations. <strong>(Top)</strong> AKB-2000 construction: a two-level taxonomy guides LLM-assisted question generation, followed by human verification. <strong>(Middle)</strong> Cascade evaluation: a captioner converts audio to text descriptions fed to a text-only LLM. <strong>(Bottom)</strong> Audio-grounded evaluation: each LLM is fine-tuned into a LALM using the DeSTA self-distillation framework.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Key Findings -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Key Findings</h2>
+    <div class="findings-grid">
+      <div class="finding-card">
+        <div class="icon">&#x1F4CA;</div>
+        <h3>Backbone Choice Matters</h3>
+        <p>Auditory knowledge varies substantially across LLM families. Backbone selection alone causes >10% absolute difference in LALM performance. Qwen consistently outperforms Llama across all settings.</p>
+      </div>
+      <div class="finding-card">
+        <div class="icon">&#x1F517;</div>
+        <h3>Strong Text-Audio Correlation</h3>
+        <p>Text-only benchmark results are strongly correlated with audio-grounded performance (r=0.71&ndash;0.82), making them a lightweight proxy for LLM selection before expensive multimodal training.</p>
+      </div>
+      <div class="finding-card">
+        <div class="icon">&#x1F50A;</div>
+        <h3>Phonological Blind Spot</h3>
+        <p>LLMs systematically struggle with phonological tasks (rhyme, stress, pronunciation). The 5 hardest subcategories all involve reasoning about how words sound when spoken aloud.</p>
+      </div>
+      <div class="finding-card">
+        <div class="icon">&#x26A1;</div>
+        <h3>Cascade Matches LALMs</h3>
+        <p>A simple captioner + LLM cascade pipeline can match or surpass state-of-the-art end-to-end LALMs, suggesting current systems underutilize the LLM backbone's reasoning capability.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Results -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Results</h2>
+    <p class="section-subtitle">Comprehensive evaluation of 12 open-weight and 5 proprietary LLMs across three settings</p>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab(event, 'tab-leaderboard')">Leaderboard</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-akb')">AKB-2000(Text)</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-cascade')">Cascade Evaluation(Text)</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-audio')">Audio-Grounded(Audio-text)</button>
+    </div>
+
+    <!-- Tab: Leaderboard -->
+    <div class="tab-panel active" id="tab-leaderboard">
+      <div class="table-wrap">
+        <table class="leaderboard">
+          <thead>
+            <tr>
+              <th rowspan="2">Model</th>
+              <th rowspan="2">AKB-2000(Text)</th>
+              <th colspan="2">Cascade (Text)</th>
+              <th colspan="2">Audio-Grounded(Audio-text)</th>
+            </tr>
+            <tr>
+              <th>MMAU(T)</th>
+              <th>MMAR(T)</th>
+              <th>MMAU(A)</th>
+              <th>MMAR(A)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="6" class="group-label">Proprietary LLMs(Text)</td></tr>
+            <tr><td>Gemini-2.5-Pro</td><td><strong>96.05</strong></td><td>70.9</td><td><strong>71.8</strong></td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td></tr>
+            <tr><td>Claude-Sonnet-4.5</td><td>95.70</td><td>70.8</td><td>70.5</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td></tr>
+            <tr><td>GPT-5</td><td>94.35</td><td><strong>71.9</strong></td><td>69.8</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td></tr>
+            <tr><td>GPT-4o</td><td>92.90</td><td>69.3</td><td>66.0</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td></tr>
+            <tr><td>Gemini-2.0-Flash</td><td>91.85</td><td>69.6</td><td>64.4</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td></tr>
+
+            <tr class="row-separator"><td colspan="6" class="group-label">Published LALMs (Audio-Grounded)</td></tr>
+            <tr><td>Audio Flamingo 3</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td><strong>73.30</strong></td><td>58.60</td></tr>
+            <tr><td>Gemini-2.5-Pro (Audio)</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td>71.60</td><td><strong>74.70</strong></td></tr>
+            <tr><td>Qwen2.5-Omni</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td>71.50</td><td>56.70</td></tr>
+            <tr><td>DeSTA2.5-Audio</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td>66.00</td><td>50.80</td></tr>
+            <tr><td>Phi-4-mm</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td class="na-cell">&mdash;</td><td>65.70</td><td>40.20</td></tr>
+
+            <tr class="row-separator"><td colspan="6" class="group-label">Open-weight LLMs &mdash; Qwen</td></tr>
+            <tr>
+              <td>Qwen3-14B</td>
+              <td style="background:var(--cyan-46)">85.05</td>
+              <td style="background:var(--cyan-42)">66.2</td>
+              <td style="background:var(--cyan-50)">64.3</td>
+              <td style="background:var(--cyan-46)">66.20</td>
+              <td style="background:var(--cyan-46)">52.90</td>
+            </tr>
+            <tr>
+              <td>Qwen3-8B</td>
+              <td style="background:var(--cyan-34)">78.95</td>
+              <td style="background:var(--cyan-50)">66.8</td>
+              <td style="background:var(--cyan-42)">62.0</td>
+              <td style="background:var(--cyan-30)">61.70</td>
+              <td style="background:var(--cyan-50)">53.00</td>
+            </tr>
+            <tr>
+              <td>Qwen3-4B</td>
+              <td style="background:var(--cyan-42)">82.00</td>
+              <td style="background:var(--cyan-46)">66.3</td>
+              <td style="background:var(--cyan-34)">61.0</td>
+              <td style="background:var(--cyan-34)">62.90</td>
+              <td style="background:var(--cyan-30)">49.20</td>
+            </tr>
+            <tr>
+              <td>Qwen2.5-7B</td>
+              <td style="background:var(--cyan-38)">80.70</td>
+              <td style="background:var(--cyan-38)">64.5</td>
+              <td style="background:var(--cyan-38)">61.4</td>
+              <td style="background:var(--cyan-50)">66.60</td>
+              <td style="background:var(--cyan-22)">47.30</td>
+            </tr>
+
+            <tr class="row-separator"><td colspan="6" class="group-label">Open-weight LLMs &mdash; Phi</td></tr>
+            <tr>
+              <td>Phi-4-14B</td>
+              <td style="background:var(--cyan-50)">86.35</td>
+              <td style="background:var(--cyan-34)">62.9</td>
+              <td style="background:var(--cyan-46)">62.6</td>
+              <td style="background:var(--cyan-26)">61.10</td>
+              <td style="background:var(--cyan-42)">52.50</td>
+            </tr>
+            <tr>
+              <td>Phi-4-mini-4B</td>
+              <td style="background:var(--cyan-26)">70.00</td>
+              <td style="background:var(--cyan-18)">56.1</td>
+              <td style="background:var(--cyan-30)">54.4</td>
+              <td style="background:var(--cyan-26)">61.00</td>
+              <td style="background:var(--cyan-5)">44.20</td>
+            </tr>
+
+            <tr class="row-separator"><td colspan="6" class="group-label">Open-weight LLMs &mdash; Llama</td></tr>
+            <tr>
+              <td>Llama-3-8B</td>
+              <td style="background:var(--cyan-30)">73.45</td>
+              <td style="background:var(--cyan-10)">53.5</td>
+              <td style="background:var(--cyan-30)">54.4</td>
+              <td class="na-cell">&mdash;</td>
+              <td class="na-cell">&mdash;</td>
+            </tr>
+            <tr>
+              <td>Llama-3.1-8B</td>
+              <td style="background:var(--cyan-18)">68.10</td>
+              <td style="background:var(--cyan-14)">53.6</td>
+              <td style="background:var(--cyan-14)">51.6</td>
+              <td style="background:var(--cyan-5)">56.40</td>
+              <td style="background:var(--cyan-22)">47.70</td>
+            </tr>
+            <tr>
+              <td>Llama-2-7B</td>
+              <td style="background:var(--cyan-5)">45.90</td>
+              <td style="background:var(--cyan-5)">43.2</td>
+              <td style="background:var(--cyan-5)">47.1</td>
+              <td class="na-cell">&mdash;</td>
+              <td class="na-cell">&mdash;</td>
+            </tr>
+
+            <tr class="row-separator"><td colspan="6" class="group-label">Open-weight LLMs &mdash; OLMo</td></tr>
+            <tr>
+              <td>OLMo-3-7B</td>
+              <td style="background:var(--cyan-22)">69.05</td>
+              <td style="background:var(--cyan-26)">57.7</td>
+              <td style="background:var(--cyan-22)">53.2</td>
+              <td style="background:var(--cyan-10)">56.90</td>
+              <td style="background:var(--cyan-10)">44.90</td>
+            </tr>
+            <tr>
+              <td>OLMo-3-7B-DPO</td>
+              <td style="background:var(--cyan-14)">67.30</td>
+              <td style="background:var(--cyan-30)">58.0</td>
+              <td style="background:var(--cyan-18)">52.4</td>
+              <td class="na-cell">&mdash;</td>
+              <td class="na-cell">&mdash;</td>
+            </tr>
+            <tr>
+              <td>OLMo-3-7B-SFT</td>
+              <td style="background:var(--cyan-10)">63.95</td>
+              <td style="background:var(--cyan-22)">57.3</td>
+              <td style="background:var(--cyan-14)">51.6</td>
+              <td class="na-cell">&mdash;</td>
+              <td class="na-cell">&mdash;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="figure-caption" style="text-align:center">Accuracy (%) across all evaluation settings. Shading indicates relative ranking among open-weight models (darker = higher). &mdash; indicates model was not evaluated in that setting.</p>
+    </div>
+
+    <!-- Tab: AKB-2000 Details -->
+    <div class="tab-panel" id="tab-akb">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Model</th><th>Avg.</th><th>Sound</th><th>Paralin.</th><th>Phonetic</th><th>Music</th><th>Quality</th><th>Technical</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="8" class="group-label">Proprietary LLMs</td></tr>
+            <tr><td>Gemini-2.5-Pro</td><td><strong>96.05</strong></td><td>96.37</td><td>96.46</td><td>94.93</td><td>95.76</td><td>97.45</td><td>95.35</td></tr>
+            <tr><td>Claude-Sonnet-4.5</td><td>95.70</td><td>95.16</td><td>96.97</td><td>91.71</td><td>96.01</td><td>95.41</td><td>96.22</td></tr>
+            <tr><td>GPT-5</td><td>94.35</td><td>95.16</td><td>94.44</td><td>93.55</td><td>95.51</td><td>94.90</td><td>92.44</td></tr>
+            <tr><td>GPT-4o</td><td>92.90</td><td>95.97</td><td>93.94</td><td>90.32</td><td>95.01</td><td>93.88</td><td>87.50</td></tr>
+            <tr><td>Gemini-2.0-Flash</td><td>91.85</td><td>93.15</td><td>92.42</td><td>88.94</td><td>92.77</td><td>94.39</td><td>89.24</td></tr>
+
+            <tr class="row-separator"><td colspan="8" class="group-label">Open-weight LLMs</td></tr>
+            <tr><td>Phi-4-14B</td><td style="background:var(--cyan-50)">86.35</td><td style="background:var(--cyan-46)">89.92</td><td style="background:var(--cyan-50)">88.22</td><td style="background:var(--cyan-50)">79.26</td><td style="background:var(--cyan-50)">89.53</td><td style="background:var(--cyan-46)">85.71</td><td style="background:var(--cyan-50)">81.69</td></tr>
+            <tr><td>Qwen3-14B</td><td style="background:var(--cyan-46)">85.05</td><td style="background:var(--cyan-50)">90.73</td><td style="background:var(--cyan-46)">85.35</td><td style="background:var(--cyan-46)">76.96</td><td style="background:var(--cyan-46)">88.78</td><td style="background:var(--cyan-50)">88.27</td><td style="background:var(--cyan-46)">79.36</td></tr>
+            <tr><td>Qwen3-4B</td><td style="background:var(--cyan-42)">82.00</td><td style="background:var(--cyan-38)">85.48</td><td style="background:var(--cyan-46)">85.35</td><td style="background:var(--cyan-42)">69.59</td><td style="background:var(--cyan-38)">86.78</td><td style="background:var(--cyan-46)">85.71</td><td style="background:var(--cyan-42)">73.84</td></tr>
+            <tr><td>Qwen2.5-7B</td><td style="background:var(--cyan-38)">80.70</td><td style="background:var(--cyan-42)">87.10</td><td style="background:var(--cyan-38)">81.99</td><td style="background:var(--cyan-38)">69.12</td><td style="background:var(--cyan-42)">87.28</td><td style="background:var(--cyan-34)">81.63</td><td style="background:var(--cyan-38)">72.97</td></tr>
+            <tr><td>Qwen3-8B</td><td style="background:var(--cyan-34)">78.95</td><td style="background:var(--cyan-34)">82.66</td><td style="background:var(--cyan-34)">79.80</td><td style="background:var(--cyan-34)">68.20</td><td style="background:var(--cyan-34)">85.04</td><td style="background:var(--cyan-38)">82.65</td><td style="background:var(--cyan-34)">72.38</td></tr>
+            <tr><td>Llama-3-8B</td><td style="background:var(--cyan-30)">73.45</td><td style="background:var(--cyan-30)">79.44</td><td style="background:var(--cyan-30)">74.58</td><td style="background:var(--cyan-18)">55.76</td><td style="background:var(--cyan-30)">81.55</td><td style="background:var(--cyan-34)">81.63</td><td style="background:var(--cyan-26)">64.24</td></tr>
+            <tr><td>Phi-4-mini-4B</td><td style="background:var(--cyan-26)">70.00</td><td style="background:var(--cyan-26)">75.00</td><td style="background:var(--cyan-22)">71.04</td><td style="background:var(--cyan-22)">56.22</td><td style="background:var(--cyan-22)">75.56</td><td style="background:var(--cyan-18)">71.94</td><td style="background:var(--cyan-30)">65.70</td></tr>
+            <tr><td>OLMo-3-7B</td><td style="background:var(--cyan-22)">69.05</td><td style="background:var(--cyan-22)">73.39</td><td style="background:var(--cyan-26)">71.21</td><td style="background:var(--cyan-26)">57.60</td><td style="background:var(--cyan-22)">75.56</td><td style="background:var(--cyan-26)">75.51</td><td style="background:var(--cyan-22)">58.14</td></tr>
+            <tr><td>Llama-3.1-8B</td><td style="background:var(--cyan-18)">68.10</td><td style="background:var(--cyan-22)">73.39</td><td style="background:var(--cyan-14)">69.53</td><td style="background:var(--cyan-30)">58.53</td><td style="background:var(--cyan-22)">75.56</td><td style="background:var(--cyan-22)">72.96</td><td style="background:var(--cyan-14)">56.40</td></tr>
+            <tr><td>OLMo-3-7B-DPO</td><td style="background:var(--cyan-14)">67.30</td><td style="background:var(--cyan-14)">71.37</td><td style="background:var(--cyan-18)">70.03</td><td style="background:var(--cyan-18)">55.76</td><td style="background:var(--cyan-26)">75.81</td><td style="background:var(--cyan-14)">71.43</td><td style="background:var(--cyan-10)">54.65</td></tr>
+            <tr><td>OLMo-3-7B-SFT</td><td style="background:var(--cyan-10)">63.95</td><td style="background:var(--cyan-10)">65.32</td><td style="background:var(--cyan-10)">64.48</td><td style="background:var(--cyan-10)">51.61</td><td style="background:var(--cyan-10)">72.07</td><td style="background:var(--cyan-10)">68.37</td><td style="background:var(--cyan-18)">57.85</td></tr>
+            <tr><td>Llama-2-7B</td><td style="background:var(--cyan-5)">45.90</td><td style="background:var(--cyan-5)">51.61</td><td style="background:var(--cyan-5)">44.61</td><td style="background:var(--cyan-5)">39.17</td><td style="background:var(--cyan-5)">52.62</td><td style="background:var(--cyan-5)">44.90</td><td style="background:var(--cyan-5)">40.99</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="figure-caption" style="text-align:center"><strong>Table 1.</strong> AKB-2000 evaluation accuracy (%) across six categories.</p>
+    </div>
+
+    <!-- Tab: Cascade Details -->
+    <div class="tab-panel" id="tab-cascade">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th rowspan="2">Model</th><th colspan="4">MMAU (Text)</th><th colspan="4">MMAR (Text)</th></tr>
+            <tr><th>Avg.</th><th>Sound</th><th>Music</th><th>Speech</th><th>Avg.</th><th>Sound</th><th>Music</th><th>Speech</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="9" class="group-label">Captioner Comparison (LLM: Gemini-2.5-Pro)</td></tr>
+            <tr><td>Official Baselines</td><td>57.3</td><td>57.35</td><td>49.70</td><td>64.86</td><td>50.7</td><td>46.1</td><td>40.3</td><td>60.9</td></tr>
+            <tr><td>Whisper-large-v3</td><td>61.7</td><td>52.55</td><td>53.59</td><td>78.98</td><td>61.6</td><td>41.21</td><td>44.66</td><td>77.55</td></tr>
+            <tr><td>Omni-captioner</td><td>68.9</td><td>69.97</td><td>61.08</td><td>75.68</td><td>65.5</td><td>51.52</td><td>46.12</td><td>77.21</td></tr>
+            <tr><td>Gemini-caption</td><td><strong>70.9</strong></td><td>68.77</td><td>66.47</td><td>77.48</td><td><strong>71.8</strong></td><td>64.85</td><td>49.03</td><td>81.97</td></tr>
+
+            <tr class="row-separator"><td colspan="9" class="group-label">Gemini-caption + Proprietary LLM</td></tr>
+            <tr><td>GPT-5</td><td>71.9</td><td>72.97</td><td>66.47</td><td>76.28</td><td>69.8</td><td>66.06</td><td>47.09</td><td>80.27</td></tr>
+            <tr><td>Gemini-2.5-Pro</td><td>70.9</td><td>68.77</td><td>66.47</td><td>77.48</td><td>71.8</td><td>64.85</td><td>49.03</td><td>81.97</td></tr>
+            <tr><td>Claude-Sonnet-4.5</td><td>70.8</td><td>68.47</td><td>63.77</td><td>80.18</td><td>70.5</td><td>60.61</td><td>50.49</td><td>81.29</td></tr>
+            <tr><td>Gemini-2.0-Flash</td><td>69.6</td><td>68.47</td><td>63.77</td><td>76.58</td><td>64.4</td><td>58.18</td><td>47.09</td><td>75.85</td></tr>
+            <tr><td>GPT-4o</td><td>69.3</td><td>66.37</td><td>64.07</td><td>77.48</td><td>66.0</td><td>61.21</td><td>49.03</td><td>73.47</td></tr>
+
+            <tr class="row-separator"><td colspan="9" class="group-label">Gemini-caption + Open-weight LLM</td></tr>
+            <tr><td>Qwen3-8B</td><td style="background:var(--cyan-50)">66.8</td><td style="background:var(--cyan-50)">66.07</td><td style="background:var(--cyan-50)">63.17</td><td style="background:var(--cyan-42)">71.17</td><td style="background:var(--cyan-42)">62.0</td><td style="background:var(--cyan-50)">58.18</td><td style="background:var(--cyan-26)">41.26</td><td style="background:var(--cyan-50)">72.79</td></tr>
+            <tr><td>Qwen3-4B</td><td style="background:var(--cyan-46)">66.3</td><td style="background:var(--cyan-42)">62.46</td><td style="background:var(--cyan-46)">62.28</td><td style="background:var(--cyan-50)">74.17</td><td style="background:var(--cyan-34)">61.0</td><td style="background:var(--cyan-38)">55.15</td><td style="background:var(--cyan-38)">45.15</td><td style="background:var(--cyan-34)">69.05</td></tr>
+            <tr><td>Qwen3-14B</td><td style="background:var(--cyan-42)">66.2</td><td style="background:var(--cyan-46)">65.77</td><td style="background:var(--cyan-34)">61.08</td><td style="background:var(--cyan-46)">71.77</td><td style="background:var(--cyan-50)">64.3</td><td style="background:var(--cyan-50)">58.18</td><td style="background:var(--cyan-46)">50.97</td><td style="background:var(--cyan-42)">70.75</td></tr>
+            <tr><td>Qwen2.5-7B</td><td style="background:var(--cyan-38)">64.5</td><td style="background:var(--cyan-30)">60.96</td><td style="background:var(--cyan-46)">62.28</td><td style="background:var(--cyan-38)">70.27</td><td style="background:var(--cyan-38)">61.4</td><td style="background:var(--cyan-38)">55.15</td><td style="background:var(--cyan-42)">47.57</td><td style="background:var(--cyan-46)">71.77</td></tr>
+            <tr><td>Phi-4-14B</td><td style="background:var(--cyan-34)">62.9</td><td style="background:var(--cyan-42)">62.46</td><td style="background:var(--cyan-38)">61.98</td><td style="background:var(--cyan-34)">64.26</td><td style="background:var(--cyan-46)">62.6</td><td style="background:var(--cyan-50)">58.18</td><td style="background:var(--cyan-50)">51.46</td><td style="background:var(--cyan-38)">69.73</td></tr>
+            <tr><td>OLMo-3-7B-DPO</td><td style="background:var(--cyan-30)">58.0</td><td style="background:var(--cyan-18)">58.86</td><td style="background:var(--cyan-26)">56.29</td><td style="background:var(--cyan-30)">58.86</td><td style="background:var(--cyan-18)">52.4</td><td style="background:var(--cyan-14)">50.30</td><td style="background:var(--cyan-14)">33.50</td><td style="background:var(--cyan-22)">59.18</td></tr>
+            <tr><td>OLMo-3-7B</td><td style="background:var(--cyan-26)">57.7</td><td style="background:var(--cyan-34)">61.26</td><td style="background:var(--cyan-18)">55.69</td><td style="background:var(--cyan-14)">56.16</td><td style="background:var(--cyan-22)">53.2</td><td style="background:var(--cyan-22)">52.12</td><td style="background:var(--cyan-14)">33.50</td><td style="background:var(--cyan-26)">60.20</td></tr>
+            <tr><td>OLMo-3-7B-SFT</td><td style="background:var(--cyan-22)">57.3</td><td style="background:var(--cyan-22)">59.16</td><td style="background:var(--cyan-22)">55.99</td><td style="background:var(--cyan-22)">56.76</td><td style="background:var(--cyan-14)">51.6</td><td style="background:var(--cyan-5)">46.67</td><td style="background:var(--cyan-22)">39.32</td><td style="background:var(--cyan-10)">54.42</td></tr>
+            <tr><td>Phi-4-mini-4B</td><td style="background:var(--cyan-18)">56.1</td><td style="background:var(--cyan-14)">53.45</td><td style="background:var(--cyan-30)">57.49</td><td style="background:var(--cyan-26)">57.36</td><td style="background:var(--cyan-30)">54.4</td><td style="background:var(--cyan-26)">52.73</td><td style="background:var(--cyan-30)">41.75</td><td style="background:var(--cyan-30)">61.22</td></tr>
+            <tr><td>Llama-3.1-8B</td><td style="background:var(--cyan-14)">53.6</td><td style="background:var(--cyan-26)">60.36</td><td style="background:var(--cyan-10)">50.30</td><td style="background:var(--cyan-10)">50.15</td><td style="background:var(--cyan-14)">51.6</td><td style="background:var(--cyan-18)">50.91</td><td style="background:var(--cyan-18)">37.86</td><td style="background:var(--cyan-14)">57.48</td></tr>
+            <tr><td>Llama-3-8B</td><td style="background:var(--cyan-10)">53.5</td><td style="background:var(--cyan-10)">51.65</td><td style="background:var(--cyan-14)">52.40</td><td style="background:var(--cyan-18)">56.46</td><td style="background:var(--cyan-30)">54.4</td><td style="background:var(--cyan-30)">53.33</td><td style="background:var(--cyan-34)">42.72</td><td style="background:var(--cyan-22)">59.18</td></tr>
+            <tr><td>Llama-2-7B</td><td style="background:var(--cyan-5)">43.2</td><td style="background:var(--cyan-5)">46.55</td><td style="background:var(--cyan-5)">46.71</td><td style="background:var(--cyan-5)">36.34</td><td style="background:var(--cyan-5)">47.1</td><td style="background:var(--cyan-14)">50.30</td><td style="background:var(--cyan-5)">33.01</td><td style="background:var(--cyan-5)">50.68</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="figure-caption" style="text-align:center"><strong>Table 2.</strong> Cascade evaluation on MMAU and MMAR (%).</p>
+    </div>
+
+    <!-- Tab: Audio-Grounded Details -->
+    <div class="tab-panel" id="tab-audio">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Model</th><th>MMAU (Audio)</th><th>MMAR (Audio)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="3" class="group-label">Published Systems</td></tr>
+            <tr><td>Gemini-2.5-Pro (Audio)</td><td>71.60</td><td>74.70</td></tr>
+            <tr><td>Audio Flamingo 3</td><td>73.30</td><td>58.60</td></tr>
+            <tr><td>Qwen2.5-Omni</td><td>71.50</td><td>56.70</td></tr>
+            <tr><td>DeSTA2.5-Audio</td><td>66.00</td><td>50.80</td></tr>
+            <tr><td>Phi-4-mm</td><td>65.70</td><td>40.20</td></tr>
+
+            <tr class="row-separator"><td colspan="3" class="group-label">Fine-tuned LALM (Ours)</td></tr>
+            <tr><td>Qwen2.5-7B</td><td style="background:var(--cyan-50)"><strong>66.60</strong></td><td style="background:var(--cyan-22)">47.30</td></tr>
+            <tr><td>Qwen3-14B</td><td style="background:var(--cyan-46)">66.20</td><td style="background:var(--cyan-46)">52.90</td></tr>
+            <tr><td>Qwen3-4B</td><td style="background:var(--cyan-34)">62.90</td><td style="background:var(--cyan-30)">49.20</td></tr>
+            <tr><td>Qwen3-8B</td><td style="background:var(--cyan-30)">61.70</td><td style="background:var(--cyan-50)"><strong>53.00</strong></td></tr>
+            <tr><td>Phi-4-14B</td><td style="background:var(--cyan-26)">61.10</td><td style="background:var(--cyan-42)">52.50</td></tr>
+            <tr><td>Phi-4-mini-4B</td><td style="background:var(--cyan-26)">61.00</td><td style="background:var(--cyan-5)">44.20</td></tr>
+            <tr><td>OLMo-3-7B</td><td style="background:var(--cyan-10)">56.90</td><td style="background:var(--cyan-10)">44.90</td></tr>
+            <tr><td>Llama-3.1-8B</td><td style="background:var(--cyan-5)">56.40</td><td style="background:var(--cyan-22)">47.70</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="figure-caption" style="text-align:center"><strong>Table 3.</strong> Audio-grounded performance (%). Upper block: published LALM systems; lower block: our fine-tuned LALMs with DeSTA framework.</p>
+
+      <div class="figures-row" style="margin-top:28px">
+        <div class="figure-wrap">
+          <img src="static/scatter_mmau.png" alt="MMAU per-category scatter" loading="lazy">
+        </div>
+        <div class="figure-wrap">
+          <img src="static/scatter_mmar.png" alt="MMAR per-category scatter" loading="lazy">
+        </div>
+      </div>
+      <p class="figure-caption" style="text-align:center"><strong>Figure 3.</strong> Category-level scatter plots comparing cascade and audio-grounded accuracy for 8 fine-tuned LALMs.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- Citation -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Citation</h2>
+    <div class="citation-box" id="bibtex">
+<button class="copy-btn" onclick="copyBibtex()">Copy</button>@article{lu2025akb,
+  title={How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation},
+  author={Lu, Ke-Han and Fu, Szu-Wei and Yang, Chao-Han Huck and Chen, Zhehuai and Huang, Sung-Feng and Yang, Chih-Kai and Lin, Yi-Cheng and Hsiao, Chi-Yuan and Ren, Wenze and Hu, En-Pei and Huang, Yu-Han and Cheng, An-Yu and Chiang, Cheng-Han and Tsao, Yu and Wang, Yu-Chiang Frank and Lee, Hung-yi},
+  journal={arXiv preprint arXiv:2603.19195},
+  year={2025}
+}</div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>National Taiwan University &middot; NVIDIA &middot; Academia Sinica</p>
+  </div>
+</footer>
+
+<script>
+// Tabs
+function switchTab(e, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+// Citation Copy
+function copyBibtex() {
+  const text = document.getElementById('bibtex').textContent.replace('Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+
+</body>
+</html>
